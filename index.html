@@ -416,7 +416,7 @@ Hello. I am an AI customer service assistant. I can help you locate products in 
 
 <script>
 
-// Get URL parameters for Qualtrics integration
+// Get URL parameters for participant identification
 
 const urlParams = new URLSearchParams(window.location.search);
 
@@ -424,7 +424,11 @@ const responseId = urlParams.get('ResponseID') || 'unknown';
 
 const participantId = urlParams.get('ParticipantID') || 'unknown';
 
-const qualtricsUrl = urlParams.get('QualtricsURL') || null;
+// Google Apps Script Web App URL - replace with your complete deployed web app URL
+
+// Example: 'https://script.google.com/macros/s/AKfycbxGh4bRqY9tXJl1mK8vN2pS5r7tU1wE3qW6yI9oT4uA-LongRandomString/exec'
+
+const DATA_COLLECTION_URL = 'https://script.google.com/macros/s/AKfycbwiRsSQ9tYCDpNYpOflllpCe58D3XGeFQ9AsSvbUI4jFdutczmYN-X3g_znFYVCQZpqug/exec';
 
 // Experimental condition and conversation tracking
 
@@ -904,8 +908,6 @@ function endConversation() {
 
 conversationEnded = true;
 
-const endTime = new Date();
-
 const conversationSummary = generateConversationSummary();
 
 addMessage("Your customer service session has been completed. Thank you for contacting support.", true);
@@ -918,111 +920,87 @@ document.getElementById('endChatButton').disabled = true;
 
 updateConversationData();
 
-// Store data for Qualtrics
+// Send data to Google Sheets
 
-const qualtricsData = {
-
-ChatTranscript: encodeForURL(conversationSummary.fullTranscript),
-
-ChatDuration: conversationSummary.duration,
-
-ChatDurationMinutes: conversationSummary.durationMinutes,
-
-TotalMessages: conversationSummary.totalMessages,
-
-UserMessages: conversationSummary.userMessages,
-
-BotMessages: conversationSummary.botMessages,
-
-AvgUserMessageLength: conversationSummary.avgUserMessageLength,
-
-ExperimentalCondition: conversationSummary.experimentalCondition,
-
-ConversationStartTime: conversationSummary.startTime,
-
-ConversationEndTime: conversationSummary.endTime,
-
-ParticipantID: participantId,
-
-ResponseID: responseId
-
-};
-
-// Show completion message and redirect
-
-showCompletionMessage(qualtricsData);
+sendDataToGoogleSheets(conversationSummary);
 
 }
 
-function showCompletionMessage(qualtricsData) {
+function showCompletionMessage(message, success = true) {
 
-document.getElementById('overlay').style.display = 'block';
+  document.getElementById('overlay').style.display = 'block';
 
-document.getElementById('redirectMessage').style.display = 'block';
+  const redirectDiv = document.getElementById('redirectMessage');
 
-let countdown = 5;
+  
 
-const countdownElement = document.getElementById('countdown');
+  redirectDiv.innerHTML = `
 
-const countdownTimer = setInterval(() => {
+    <h3>${success ? '✓' : '!'} Chat Completed</h3>
 
-countdown--;
+    <p>${message}</p>
 
-countdownElement.textContent = countdown;
+    <p><small>You may now close this window and return to the survey.</small></p>
 
-if (countdown <= 0) {
+    <button onclick="window.close()" style="background: #2196f3; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 15px;">Close Window</button>
 
-clearInterval(countdownTimer);
+  `;
 
-redirectToQualtrics(qualtricsData);
+  
 
-}
-
-}, 1000);
+  redirectDiv.style.display = 'block';
 
 }
 
-function redirectToQualtrics(qualtricsData) {
+async function sendDataToGoogleSheets(conversationSummary) {
 
-// If we have a Qualtrics URL, redirect with data
+  try {
 
-if (qualtricsUrl) {
+    const response = await fetch(DATA_COLLECTION_URL, {
 
-const separator = qualtricsUrl.includes('?') ? '&' : '?';
+      method: 'POST',
 
-const params = Object.keys(qualtricsData)
+      headers: {
 
-.map(key => `${key}=${qualtricsData[key]}`)
+        'Content-Type': 'application/json'
 
-.join('&');
+      },
 
-window.location.href = qualtricsUrl + separator + params;
+      body: JSON.stringify(conversationSummary)
 
-} else {
+    });
 
-// Fallback: try to communicate with parent window (for embedded scenarios)
+    
 
-if (window.parent && window.parent !== window) {
+    const result = await response.json();
 
-window.parent.postMessage({
+    
 
-type: 'chatCompleted',
+    if (result.success) {
 
-data: qualtricsData
+      showCompletionMessage('Your conversation has been successfully recorded. Thank you for participating!', true);
 
-}, '*');
+    } else {
 
-} else {
+      console.error('Failed to save data:', result.error);
 
-// Final fallback: store in localStorage and show instructions
+      showCompletionMessage('Conversation completed. If you experience any issues, please contact the research team.', false);
 
-localStorage.setItem('chatbotData', JSON.stringify(qualtricsData));
+    }
 
-alert(`Chat completed! Please return to the survey. If the data is not automatically captured, please provide this ID: ${responseId}`);
+  } catch (error) {
 
-}
+    console.error('Error sending data to Google Sheets:', error);
 
-}
+    showCompletionMessage('Conversation completed. Data has been saved locally as backup.', false);
+
+    
+
+    // Fallback: save to localStorage
+
+    localStorage.setItem('chatbotBackup_' + responseId, JSON.stringify(conversationSummary));
+
+  }
 
 }
 
