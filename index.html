@@ -426,7 +426,7 @@ const participantId = urlParams.get('ParticipantID') || 'unknown';
 
 // Google Apps Script Web App URL - replace with your complete deployed web app URL
 
-const DATA_COLLECTION_URL = 'https://script.google.com/macros/s/AKfycbwa94lD2gutDEs3cRRZjJBjfgMEzN5ym_VRoAeI1dMRIf523MNTFGfeNjr2Ow5naf7Y/exec';
+const DATA_COLLECTION_URL = 'https://script.google.com/macros/s/AKfycbz-rhH44LTPEmaSfB7CJuhqHAD3YSKdCUg0gBDD6UiMOFjHBtW14gNN1c_Tj2KwFJoDsA/exec';
 
 // Experimental condition and conversation tracking
 
@@ -952,6 +952,14 @@ function showCompletionMessage(message, success = true) {
 
 async function sendDataToGoogleSheets(conversationSummary) {
 
+  console.log("Attempting to send data to Google Sheets");
+
+  console.log("Data being sent:", conversationSummary);
+
+  console.log("Endpoint URL:", DATA_COLLECTION_URL);
+
+  
+
   try {
 
     const response = await fetch(DATA_COLLECTION_URL, {
@@ -970,11 +978,39 @@ async function sendDataToGoogleSheets(conversationSummary) {
 
     
 
-    const result = await response.json();
+    console.log("Fetch response status:", response.status);
+
+    console.log("Fetch response headers:", response.headers);
+
+    
+
+    const responseText = await response.text();
+
+    console.log("Raw response text:", responseText);
+
+    
+
+    let result;
+
+    try {
+
+      result = JSON.parse(responseText);
+
+      console.log("Parsed response:", result);
+
+    } catch (parseError) {
+
+      console.error("Failed to parse response as JSON:", parseError);
+
+      result = {success: false, error: "Invalid JSON response"};
+
+    }
 
     
 
     if (result.success) {
+
+      console.log("Data successfully sent to Google Sheets");
 
       showCompletionMessage('Your conversation has been successfully recorded. Thank you for participating!', true);
 
