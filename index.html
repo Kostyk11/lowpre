@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Service Chat - Canteberry Shoes</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .chat-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #fafafa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.4;
+        }
+
+        .message.bot .message-content {
+            background: #e3f2fd;
+            color: #1565c0;
+            margin-left: 10px;
+        }
+
+        .message.user .message-content {
+            background: #2196f3;
+            color: white;
+            margin-right: 10px;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 14px;
+        }
+
+        .bot-avatar {
+            background: #2c3e50;
+        }
+
+        .user-avatar {
+            background: #2196f3;
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            background: white;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .chat-input:focus {
+            border-color: #2196f3;
+        }
+
+        .send-button {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 14px;
+        }
+
+        .send-button:hover {
+            background: #1976d2;
+        }
+
+        .send-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 10px;
+            font-style: italic;
+            color: #666;
+        }
+
+        .end-chat-button {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .end-chat-button:hover {
+            background: #d32f2f;
+        }
+
+        .conversation-data {
+            display: none;
+        }
+
+        .session-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>Canteberry Customer Service</h2>
+            <p>Live Chat Support</p>
+        </div>
+
+        <div class="session-info">
+            <strong>Scenario:</strong> You are trying to find a pair of shoes in a specific size & color on our website, but you keep getting error messages as you search. You need help finding these shoes.
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="message-avatar bot-avatar">AI</div>
+                <div class="message-content">
+                    Hello. I am an AI customer service assistant. I can help you locate products in our inventory and resolve website search issues. Please provide the size, color, and style specifications for the shoes you need.
+                </div>
+            </div>
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator">AI Assistant is typing...</div>
+
+        <div class="chat-input-container">
+            <div class="input-row">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Type your message here..." maxlength="500">
+                <button class="send-button" id="sendButton">Send</button>
+            </div>
+            <button class="end-chat-button" id="endChatButton">End Conversation</button>
+        </div>
+    </div>
+
+    <div class="conversation-data" id="conversationData">
+        <div id="experimentalCondition">Low Empathy, Pre-Purchase</div>
+        <div id="conversationLog"></div>
+        <div id="conversationDuration"></div>
+        <div id="startTime"></div>
+    </div>
+
+    <script>
+        // Experimental condition and conversation tracking
+        const CONDITION = {
+            empathy: 'low',
+            stage: 'pre-purchase'
+        };
+
+        const conversationLog = [];
+        const startTime = new Date();
+        let conversationEnded = false;
+
+        // Content filtering
+        const prohibitedWords = ['violence', 'kill', 'death', 'sex', 'adult', 'porn', 'fuck', 'shit', 'damn', 'hell'];
+        
+        function containsProhibitedContent(message) {
+            const lowerMessage = message.toLowerCase();
+            return prohibitedWords.some(word => lowerMessage.includes(word));
+        }
+
+        function addMessage(content, isBot = false, isSearching = false) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isBot ? 'bot' : 'user'}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = `message-avatar ${isBot ? 'bot-avatar' : 'user-avatar'}`;
+            avatar.textContent = isBot ? 'AI' : 'You';
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            if (isSearching) {
+                messageContent.innerHTML = '<em>' + content + '</em>';
+            } else {
+                messageContent.textContent = content;
+            }
+            
+            if (isBot) {
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(messageContent);
+            } else {
+                messageDiv.appendChild(messageContent);
+                messageDiv.appendChild(avatar);
+            }
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // Log the message
+            conversationLog.push({
+                timestamp: new Date(),
+                sender: isBot ? 'bot' : 'user',
+                message: content,
+                isSearching: isSearching || false
+            });
+
+            updateConversationData();
+        }
+
+        function sendProactiveSequence(initialResponse, searchingText, followUpResponse, delay1 = 1500, delay2 = 2000) {
+            // Send initial response
+            addMessage(initialResponse, true);
+            
+            // Show searching indicator after delay
+            setTimeout(() => {
+                showTypingIndicator();
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    addMessage(searchingText, true, true);
+                    
+                    // Send follow-up response after search simulation
+                    setTimeout(() => {
+                        showTypingIndicator();
+                        setTimeout(() => {
+                            hideTypingIndicator();
+                            addMessage(followUpResponse, true);
+                            document.getElementById('sendButton').disabled = false;
+                            document.getElementById('chatInput').focus();
+                        }, 1000);
+                    }, delay2);
+                }, 800);
+            }, delay1);
+        }
+
+        function getRandomResponse(category, userMessage) {
+            const message = userMessage.toLowerCase();
+            
+            if (containsProhibitedContent(userMessage)) {
+                return "I can only assist with product searches and inventory information. Please provide your shoe specifications.";
+            }
+
+            // Track conversation state for problem-solving flow
+            if (!window.conversationState) {
+                window.conversationState = {
+                    hasSpecs: false,
+                    foundProduct: false,
+                    offeredComparison: false,
+                    finalizing: false
+                };
+            }
+
+            // Enhanced pattern matching for product specifications
+            const hasSize = message.match(/\d+/) || message.includes('size');
+            const hasColor = message.includes('blue') || message.includes('black') || message.includes('white') || message.includes('red') || message.includes('brown') || message.includes('gray') || message.includes('grey') || message.includes('green') || message.includes('pink') || message.includes('color');
+            const hasStyle = message.includes('sneaker') || message.includes('boot') || message.includes('sandal') || message.includes('heel') || message.includes('flat') || message.includes('running') || message.includes('dress') || message.includes('casual') || message.includes('athletic') || message.includes('style') || message.includes('shoe');
+
+            // Handle return policy questions BEFORE conversation flow logic
+            if (message.includes('return') && (message.includes('free') || message.includes('cost') || message.includes('charge'))) {
+                if (message.includes('comparison') || window.conversationState.offeredComparison) {
+                    return "Comparison shipments include prepaid return labels for one item. You may return either pair at no additional cost within 30 days of delivery. Standard return processing applies.";
+                } else {
+                    return "Returns are processed with prepaid return labels provided. No additional shipping charges apply for returns within 30 days of delivery.";
+                }
+            }
+
+            if (message.includes('return') && !message.includes('free') && !message.includes('cost')) {
+                return "Return processing is available for 30 days from delivery date. Prepaid return labels are provided with all shipments. Do you require additional return policy information?";
+            }
+
+            // Conversation flow logic with proactive responses
+            if (!window.conversationState.hasSpecs && (hasSize && hasColor && hasStyle)) {
+                window.conversationState.hasSpecs = true;
+                return {
+                    type: 'proactive',
+                    initial: "I will search our inventory for those specifications now.",
+                    searching: "AI Assistant searching inventory...",
+                    followUp: "The requested shoes are available in our inventory. They are currently in stock for immediate shipment. Do you require information about alternative styles, or would you like to proceed with order placement?"
+                };
+            }
+            
+            if (!window.conversationState.hasSpecs && (hasSize || hasColor || hasStyle)) {
+                window.conversationState.hasSpecs = true;
+                return {
+                    type: 'proactive',
+                    initial: "I will search our inventory for those specifications now.",
+                    searching: "AI Assistant searching inventory...",
+                    followUp: "The requested shoes are available in our inventory. They are currently in stock for immediate shipment. Do you require information about alternative styles, or would you like to proceed with order placement?"
+                };
+            }
+            
+            if (window.conversationState.hasSpecs && !window.conversationState.offeredComparison) {
+                window.conversationState.offeredComparison = true;
+                if (message.includes('alternative') || message.includes('information') || message.includes('styles') || message.includes('options') || message.includes('yes') || message.includes('sure') || message.includes('okay') || message.includes('ok') || message.includes('yep') || message.includes('yeah') || message.includes('yup')) {
+                    return {
+                        type: 'proactive',
+                        initial: "I will locate alternative product options for your review.",
+                        searching: "AI Assistant searching for alternative styles...",
+                        followUp: "I have identified comparable products with similar specifications. Both the original and alternative items can be shipped for comparison purposes if required. Do you want to proceed with comparison shipment or single item order?"
+                    };
+                } else if (message.includes('proceed') || message.includes('order') || message.includes('placement') || message.includes('buy') || message.includes('no') || message.includes('single') || message.includes('one')) {
+                    window.conversationState.finalizing = true;
+                    return "I will process your order request. You will receive an email with the secure order link within five minutes. Is there additional assistance you require?";
+                }
+            }
+            
+            if (window.conversationState.offeredComparison && !window.conversationState.finalizing) {
+                window.conversationState.finalizing = true;
+                if (message.includes('comparison') || message.includes('both') || message.includes('shipment') || message.includes('yes') || message.includes('sure') || message.includes('okay') || message.includes('ok') || message.includes('yep') || message.includes('yeah') || message.includes('yup')) {
+                    return {
+                        type: 'proactive',
+                        initial: "I will arrange comparison shipment for both items.",
+                        searching: "AI Assistant processing comparison order...",
+                        followUp: "Comparison shipment has been arranged. Both items will be delivered within 3-5 business days. Order confirmation and tracking information will be sent via email. Is there additional assistance you require?"
+                    };
+                } else {
+                    return "I will process your single item order. You will receive an email with the secure order link within five minutes. Is there additional assistance you require?";
+                }
+            }
+
+            // Handle "no" response to further assistance
+            if (window.conversationState.finalizing && (message.includes('no') || message.includes('nothing') || message.includes('none') || message.includes('that is all'))) {
+                return "Your request has been processed. Thank you for using our customer service.";
+            }
+
+            // Context-aware responses based on user input
+            if (message.includes('error') || message.includes('problem') || message.includes('trouble') || message.includes('not working')) {
+                return "The website search function has technical issues. I can access the inventory database directly. Provide your shoe specifications for manual search.";
+            } else if (message.includes('thank') || message.includes('bye') || message.includes('done')) {
+                return "Your customer service request has been completed. Thank you for contacting support.";
+            }
+
+            // Default neutral responses
+            const defaultResponses = [
+                "I require specific product information to search our inventory. Please provide size, color, and style details.",
+                "I can locate products in our database. What are the exact specifications for the shoes you need?",
+                "I will assist with your product search. Please specify the size, color, and style requirements."
+            ];
+
+            return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+        }
+
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'block';
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'none';
+        }
+
+        function sendMessage() {
+            if (conversationEnded) return;
+
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addMessage(message, false);
+                input.value = '';
+                
+                // Show typing indicator and simulate response delay
+                showTypingIndicator();
+                document.getElementById('sendButton').disabled = true;
+                
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    const response = getRandomResponse('context', message);
+                    
+                    // Handle proactive responses
+                    if (typeof response === 'object' && response.type === 'proactive') {
+                        sendProactiveSequence(response.initial, response.searching, response.followUp);
+                    } else {
+                        // Handle regular responses
+                        addMessage(response, true);
+                        document.getElementById('sendButton').disabled = false;
+                        input.focus();
+                    }
+                }, Math.random() * 1500 + 800);
+            }
+        }
+
+        function endConversation() {
+            conversationEnded = true;
+            const endTime = new Date();
+            const duration = Math.round((endTime - startTime) / 1000);
+            
+            addMessage("Your customer service session has been completed. Thank you for contacting support.", true);
+            
+            document.getElementById('chatInput').disabled = true;
+            document.getElementById('sendButton').disabled = true;
+            document.getElementById('endChatButton').disabled = true;
+            
+            updateConversationData();
+            document.getElementById('conversationDuration').textContent = duration;
+            
+            setTimeout(() => {
+                alert(`Conversation completed! Duration: ${Math.floor(duration/60)}:${(duration%60).toString().padStart(2,'0')}\n\nYou can now return to the survey.`);
+            }, 1000);
+        }
+
+        function updateConversationData() {
+            document.getElementById('conversationLog').textContent = JSON.stringify(conversationLog);
+            document.getElementById('startTime').textContent = startTime.toISOString();
+        }
+
+        // Event listeners
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
+        document.getElementById('endChatButton').addEventListener('click', endConversation);
+        
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Initialize conversation data
+        document.getElementById('experimentalCondition').textContent = `${CONDITION.empathy} empathy, ${CONDITION.stage}`;
+        updateConversationData();
+
+        // Focus on input
+        document.getElementById('chatInput').focus();
+    </script>
+</body>
+</html>
