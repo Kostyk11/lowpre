@@ -274,11 +274,10 @@ Hello. I am an AI customer service assistant. I can help you locate products in 
 <p>Please copy this transcript for the survey</p>
 </div>
 <div class="transcript-instructions">
-<strong>Instructions:</strong> Please copy the entire transcript below and paste it into the text box in the Qualtrics survey to verify your participation in this study.
+<strong>Instructions:</strong> Please copy the entire transcript below and paste it into the text box in the Qualtrics survey to verify your participation in this study. You can now go back to the survey window and paste the text.
 </div>
 <div class="transcript-content" id="transcriptContent"></div>
 <button class="copy-button" id="copyButton">Copy Transcript</button>
-<button class="return-button" onclick="alert('Please return to the Qualtrics survey and paste the transcript you copied.')">Return to Survey</button>
 </div>
 
 <div class="conversation-data" id="conversationData">
@@ -490,7 +489,7 @@ function generateTranscript() {
 let transcript = `CONVERSATION TRANSCRIPT
 ======================
 Study: Customer Service Chatbot Interaction
-Condition: Low Empathy, Pre-Purchase
+Condition: LPre
 Start Time: ${startTime.toLocaleString()}
 Duration: ${Math.floor((new Date() - startTime) / 1000)} seconds
 
