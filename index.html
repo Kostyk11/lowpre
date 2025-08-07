@@ -1,1109 +1,616 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Customer Service Chat - Canteberry Shoes</title>
-
 <style>
-
 body {
-
 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-
 margin: 0;
-
 padding: 20px;
-
 background-color: #f5f5f5;
-
 }
 
 .chat-container {
-
 max-width: 600px;
-
 margin: 0 auto;
-
 background: white;
-
 border-radius: 10px;
-
 box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-
 overflow: hidden;
-
 }
 
 .chat-header {
-
 background: #2c3e50;
-
 color: white;
-
 padding: 20px;
-
 text-align: center;
-
 }
 
 .chat-messages {
-
 height: 400px;
-
 overflow-y: auto;
-
 padding: 20px;
-
 background: #fafafa;
-
 }
 
 .message {
-
 margin-bottom: 15px;
-
 display: flex;
-
 align-items: flex-start;
-
 }
 
 .message.bot {
-
 justify-content: flex-start;
-
 }
 
 .message.user {
-
 justify-content: flex-end;
-
 }
 
 .message-content {
-
 max-width: 70%;
-
 padding: 12px 16px;
-
 border-radius: 18px;
-
 line-height: 1.4;
-
 }
 
 .message.bot .message-content {
-
 background: #e3f2fd;
-
 color: #1565c0;
-
 margin-left: 10px;
-
 }
 
 .message.user .message-content {
-
 background: #2196f3;
-
 color: white;
-
 margin-right: 10px;
-
 }
 
 .message-avatar {
-
 width: 32px;
-
 height: 32px;
-
 border-radius: 50%;
-
 display: flex;
-
 align-items: center;
-
 justify-content: center;
-
 font-weight: bold;
-
 color: white;
-
 font-size: 14px;
-
 }
 
 .bot-avatar {
-
 background: #2c3e50;
-
 }
 
 .user-avatar {
-
 background: #2196f3;
-
 }
 
 .chat-input-container {
-
 padding: 20px;
-
 border-top: 1px solid #eee;
-
 background: white;
-
 }
 
 .chat-input {
-
 width: 100%;
-
 padding: 12px;
-
 border: 2px solid #ddd;
-
 border-radius: 25px;
-
 outline: none;
-
 font-size: 14px;
-
 box-sizing: border-box;
-
 }
 
 .chat-input:focus {
-
 border-color: #2196f3;
-
 }
 
 .send-button {
-
 background: #2196f3;
-
 color: white;
-
 border: none;
-
 padding: 12px 20px;
-
 border-radius: 25px;
-
 cursor: pointer;
-
 margin-left: 10px;
-
 font-size: 14px;
-
 }
 
 .send-button:hover {
-
 background: #1976d2;
-
 }
 
 .send-button:disabled {
-
 background: #ccc;
-
 cursor: not-allowed;
-
 }
 
 .input-row {
-
 display: flex;
-
 align-items: center;
-
 }
 
 .typing-indicator {
-
 display: none;
-
 padding: 10px;
-
 font-style: italic;
-
 color: #666;
-
 }
 
 .end-chat-button {
-
 background: #f44336;
-
 color: white;
-
 border: none;
-
 padding: 10px 20px;
-
 border-radius: 5px;
-
 cursor: pointer;
-
 margin-top: 15px;
-
 font-size: 14px;
-
 }
 
 .end-chat-button:hover {
-
 background: #d32f2f;
-
 }
 
 .conversation-data {
-
 display: none;
-
 }
 
 .session-info {
-
 background: #fff3cd;
-
 border: 1px solid #ffeaa7;
-
 padding: 15px;
-
 margin-bottom: 20px;
-
 border-radius: 5px;
-
 color: #856404;
-
 }
 
-.redirect-message {
-
+.transcript-container {
 display: none;
-
-position: fixed;
-
-top: 50%;
-
-left: 50%;
-
-transform: translate(-50%, -50%);
-
+max-width: 600px;
+margin: 20px auto;
 background: white;
-
-padding: 30px;
-
 border-radius: 10px;
+box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+padding: 20px;
+}
 
-box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-
+.transcript-header {
+background: #28a745;
+color: white;
+padding: 15px;
+margin: -20px -20px 20px -20px;
+border-radius: 10px 10px 0 0;
 text-align: center;
-
-z-index: 1000;
-
 }
 
-.overlay {
-
-display: none;
-
-position: fixed;
-
-top: 0;
-
-left: 0;
-
-width: 100%;
-
-height: 100%;
-
-background: rgba(0,0,0,0.5);
-
-z-index: 999;
-
+.transcript-instructions {
+background: #e7f3ff;
+border: 1px solid #b8daff;
+padding: 15px;
+margin-bottom: 20px;
+border-radius: 5px;
+color: #004085;
 }
 
+.transcript-content {
+background: #f8f9fa;
+border: 1px solid #dee2e6;
+padding: 15px;
+border-radius: 5px;
+font-family: monospace;
+font-size: 12px;
+line-height: 1.4;
+white-space: pre-wrap;
+max-height: 400px;
+overflow-y: auto;
+}
+
+.copy-button {
+background: #28a745;
+color: white;
+border: none;
+padding: 10px 20px;
+border-radius: 5px;
+cursor: pointer;
+margin-top: 15px;
+font-size: 14px;
+}
+
+.copy-button:hover {
+background: #218838;
+}
+
+.return-button {
+background: #007bff;
+color: white;
+border: none;
+padding: 10px 20px;
+border-radius: 5px;
+cursor: pointer;
+margin-top: 15px;
+margin-left: 10px;
+font-size: 14px;
+}
+
+.return-button:hover {
+background: #0056b3;
+}
 </style>
-
 </head>
-
 <body>
-
-<div class="overlay" id="overlay"></div>
-
-<div class="redirect-message" id="redirectMessage">
-
-<h3>Thank you for completing the chat!</h3>
-
-<p>You will be redirected back to the survey in <span id="countdown">5</span> seconds...</p>
-
-<p><small>If you are not redirected automatically, please close this window and return to the survey.</small></p>
-
-</div>
-
-<div class="chat-container">
-
+<div class="chat-container" id="chatContainer">
 <div class="chat-header">
-
 <h2>Canteberry Customer Service</h2>
-
 <p>Live Chat Support</p>
-
 </div>
-
 <div class="session-info">
-
 <strong>Scenario:</strong> You are trying to find a pair of shoes in a specific size & color on our website, but you keep getting error messages as you search. You need help finding these shoes.
-
 </div>
-
 <div class="chat-messages" id="chatMessages">
-
 <div class="message bot">
-
 <div class="message-avatar bot-avatar">AI</div>
-
 <div class="message-content">
-
 Hello. I am an AI customer service assistant. I can help you locate products in our inventory and resolve website search issues. Please provide the size, color, and style specifications for the shoes you need.
-
 </div>
-
 </div>
-
 </div>
-
 <div class="typing-indicator" id="typingIndicator">AI Assistant is typing...</div>
-
 <div class="chat-input-container">
-
 <div class="input-row">
-
 <input type="text" class="chat-input" id="chatInput" placeholder="Type your message here..." maxlength="500">
-
 <button class="send-button" id="sendButton">Send</button>
-
 </div>
-
 <button class="end-chat-button" id="endChatButton">End Conversation</button>
-
+</div>
 </div>
 
+<div class="transcript-container" id="transcriptContainer">
+<div class="transcript-header">
+<h2>Conversation Transcript</h2>
+<p>Please copy this transcript for the survey</p>
+</div>
+<div class="transcript-instructions">
+<strong>Instructions:</strong> Please copy the entire transcript below and paste it into the text box in the Qualtrics survey to verify your participation in this study.
+</div>
+<div class="transcript-content" id="transcriptContent"></div>
+<button class="copy-button" id="copyButton">Copy Transcript</button>
+<button class="return-button" onclick="alert('Please return to the Qualtrics survey and paste the transcript you copied.')">Return to Survey</button>
 </div>
 
 <div class="conversation-data" id="conversationData">
-
 <div id="experimentalCondition">Low Empathy, Pre-Purchase</div>
-
 <div id="conversationLog"></div>
-
 <div id="conversationDuration"></div>
-
 <div id="startTime"></div>
-
 </div>
 
 <script>
-
-// Get URL parameters for participant identification
-
-const urlParams = new URLSearchParams(window.location.search);
-
-const responseId = urlParams.get('ResponseID') || 'unknown';
-
-const participantId = urlParams.get('ParticipantID') || 'unknown';
-
-// Google Apps Script Web App URL - replace with your complete deployed web app URL
-
-const DATA_COLLECTION_URL = 'https://script.google.com/macros/s/AKfycbz0Clvz23wCvGzrxvx_F_b_6YEhngr2cVo1aH3nveZ_GWKkdv_bBEezV6THSdSQc6Cxyw/exec';
-
 // Experimental condition and conversation tracking
-
 const CONDITION = {
-
 empathy: 'low',
-
 stage: 'pre-purchase'
-
 };
 
 const conversationLog = [];
-
 const startTime = new Date();
-
 let conversationEnded = false;
 
-let messageCount = 0;
-
 // Content filtering
-
 const prohibitedWords = ['violence', 'kill', 'death', 'sex', 'adult', 'porn', 'fuck', 'shit', 'damn', 'hell'];
 
 function containsProhibitedContent(message) {
-
 const lowerMessage = message.toLowerCase();
-
 return prohibitedWords.some(word => lowerMessage.includes(word));
-
 }
 
 function addMessage(content, isBot = false, isSearching = false) {
-
 const messagesContainer = document.getElementById('chatMessages');
-
 const messageDiv = document.createElement('div');
-
 messageDiv.className = `message ${isBot ? 'bot' : 'user'}`;
 
 const avatar = document.createElement('div');
-
 avatar.className = `message-avatar ${isBot ? 'bot-avatar' : 'user-avatar'}`;
-
 avatar.textContent = isBot ? 'AI' : 'You';
 
 const messageContent = document.createElement('div');
-
 messageContent.className = 'message-content';
-
 if (isSearching) {
-
 messageContent.innerHTML = '<em>' + content + '</em>';
-
 } else {
-
 messageContent.textContent = content;
-
 }
 
 if (isBot) {
-
 messageDiv.appendChild(avatar);
-
 messageDiv.appendChild(messageContent);
-
 } else {
-
 messageDiv.appendChild(messageContent);
-
 messageDiv.appendChild(avatar);
-
 }
 
 messagesContainer.appendChild(messageDiv);
-
 messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-// Log the message with enhanced metadata
-
-messageCount++;
-
+// Log the message
 conversationLog.push({
-
-messageNumber: messageCount,
-
-timestamp: new Date().toISOString(),
-
-timeFromStart: Math.round((new Date() - startTime) / 1000),
-
+timestamp: new Date(),
 sender: isBot ? 'bot' : 'user',
-
 message: content,
-
-isSearching: isSearching || false,
-
-messageLength: content.length
-
+isSearching: isSearching || false
 });
 
 updateConversationData();
-
 }
 
-// Initialize with the first bot message
-
-conversationLog.push({
-
-messageNumber: 1,
-
-timestamp: startTime.toISOString(),
-
-timeFromStart: 0,
-
-sender: 'bot',
-
-message: 'Hello. I am an AI customer service assistant. I can help you locate products in our inventory and resolve website search issues. Please provide the size, color, and style specifications for the shoes you need.',
-
-isSearching: false,
-
-messageLength: 168
-
-});
-
-messageCount = 1;
-
 function sendProactiveSequence(initialResponse, searchingText, followUpResponse, delay1 = 1500, delay2 = 2000) {
-
 // Send initial response
-
 addMessage(initialResponse, true);
 
 // Show searching indicator after delay
-
 setTimeout(() => {
-
 showTypingIndicator();
-
 setTimeout(() => {
-
 hideTypingIndicator();
-
 addMessage(searchingText, true, true);
 
 // Send follow-up response after search simulation
-
 setTimeout(() => {
-
 showTypingIndicator();
-
 setTimeout(() => {
-
 hideTypingIndicator();
-
 addMessage(followUpResponse, true);
-
 document.getElementById('sendButton').disabled = false;
-
 document.getElementById('chatInput').focus();
-
 }, 1000);
-
 }, delay2);
-
 }, 800);
-
 }, delay1);
-
 }
 
 function getRandomResponse(category, userMessage) {
-
 const message = userMessage.toLowerCase();
 
 if (containsProhibitedContent(userMessage)) {
-
 return "I can only assist with product searches and inventory information. Please provide your shoe specifications.";
-
 }
 
 // Track conversation state for problem-solving flow
-
 if (!window.conversationState) {
-
 window.conversationState = {
-
 hasSpecs: false,
-
 foundProduct: false,
-
 offeredComparison: false,
-
 finalizing: false
-
 };
-
 }
 
 // Enhanced pattern matching for product specifications
-
 const hasSize = message.match(/\d+/) || message.includes('size');
-
 const hasColor = message.includes('blue') || message.includes('black') || message.includes('white') || message.includes('red') || message.includes('brown') || message.includes('gray') || message.includes('grey') || message.includes('green') || message.includes('pink') || message.includes('color');
-
 const hasStyle = message.includes('sneaker') || message.includes('boot') || message.includes('sandal') || message.includes('heel') || message.includes('flat') || message.includes('running') || message.includes('dress') || message.includes('casual') || message.includes('athletic') || message.includes('style') || message.includes('shoe');
 
 // Handle return policy questions BEFORE conversation flow logic
-
 if (message.includes('return') && (message.includes('free') || message.includes('cost') || message.includes('charge'))) {
-
 if (message.includes('comparison') || window.conversationState.offeredComparison) {
-
 return "Comparison shipments include prepaid return labels for one item. You may return either pair at no additional cost within 30 days of delivery. Standard return processing applies.";
-
 } else {
-
 return "Returns are processed with prepaid return labels provided. No additional shipping charges apply for returns within 30 days of delivery.";
-
 }
-
 }
 
 if (message.includes('return') && !message.includes('free') && !message.includes('cost')) {
-
 return "Return processing is available for 30 days from delivery date. Prepaid return labels are provided with all shipments. Do you require additional return policy information?";
-
 }
 
 // Conversation flow logic with proactive responses
-
 if (!window.conversationState.hasSpecs && (hasSize && hasColor && hasStyle)) {
-
 window.conversationState.hasSpecs = true;
-
 return {
-
 type: 'proactive',
-
 initial: "I will search our inventory for those specifications now.",
-
 searching: "AI Assistant searching inventory...",
-
 followUp: "The requested shoes are available in our inventory. They are currently in stock for immediate shipment. Do you require information about alternative styles, or would you like to proceed with order placement?"
-
 };
-
 }
 
 if (!window.conversationState.hasSpecs && (hasSize || hasColor || hasStyle)) {
-
 window.conversationState.hasSpecs = true;
-
 return {
-
 type: 'proactive',
-
 initial: "I will search our inventory for those specifications now.",
-
 searching: "AI Assistant searching inventory...",
-
 followUp: "The requested shoes are available in our inventory. They are currently in stock for immediate shipment. Do you require information about alternative styles, or would you like to proceed with order placement?"
-
 };
-
 }
 
 if (window.conversationState.hasSpecs && !window.conversationState.offeredComparison) {
-
 window.conversationState.offeredComparison = true;
-
 if (message.includes('alternative') || message.includes('information') || message.includes('styles') || message.includes('options') || message.includes('yes') || message.includes('sure') || message.includes('okay') || message.includes('ok') || message.includes('yep') || message.includes('yeah') || message.includes('yup')) {
-
 return {
-
 type: 'proactive',
-
 initial: "I will locate alternative product options for your review.",
-
 searching: "AI Assistant searching for alternative styles...",
-
 followUp: "I have identified comparable products with similar specifications. Both the original and alternative items can be shipped for comparison purposes if required. Do you want to proceed with comparison shipment or single item order?"
-
 };
-
 } else if (message.includes('proceed') || message.includes('order') || message.includes('placement') || message.includes('buy') || message.includes('no') || message.includes('single') || message.includes('one')) {
-
 window.conversationState.finalizing = true;
-
 return "I will process your order request. You will receive an email with the secure order link within five minutes. Is there additional assistance you require?";
-
 }
-
 }
 
 if (window.conversationState.offeredComparison && !window.conversationState.finalizing) {
-
 window.conversationState.finalizing = true;
-
 if (message.includes('comparison') || message.includes('both') || message.includes('shipment') || message.includes('yes') || message.includes('sure') || message.includes('okay') || message.includes('ok') || message.includes('yep') || message.includes('yeah') || message.includes('yup')) {
-
 return {
-
 type: 'proactive',
-
 initial: "I will arrange comparison shipment for both items.",
-
 searching: "AI Assistant processing comparison order...",
-
 followUp: "Comparison shipment has been arranged. Both items will be delivered within 3-5 business days. Order confirmation and tracking information will be sent via email. Is there additional assistance you require?"
-
 };
-
 } else {
-
 return "I will process your single item order. You will receive an email with the secure order link within five minutes. Is there additional assistance you require?";
-
 }
-
 }
 
 // Handle "no" response to further assistance
-
 if (window.conversationState.finalizing && (message.includes('no') || message.includes('nothing') || message.includes('none') || message.includes('that is all'))) {
-
 return "Your request has been processed. Thank you for using our customer service.";
-
 }
 
 // Context-aware responses based on user input
-
 if (message.includes('error') || message.includes('problem') || message.includes('trouble') || message.includes('not working')) {
-
 return "The website search function has technical issues. I can access the inventory database directly. Provide your shoe specifications for manual search.";
-
 } else if (message.includes('thank') || message.includes('bye') || message.includes('done')) {
-
 return "Your customer service request has been completed. Thank you for contacting support.";
-
 }
 
 // Default neutral responses
-
 const defaultResponses = [
-
 "I require specific product information to search our inventory. Please provide size, color, and style details.",
-
 "I can locate products in our database. What are the exact specifications for the shoes you need?",
-
 "I will assist with your product search. Please specify the size, color, and style requirements."
-
 ];
 
 return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
-
 }
 
 function showTypingIndicator() {
-
 document.getElementById('typingIndicator').style.display = 'block';
-
 }
 
 function hideTypingIndicator() {
-
 document.getElementById('typingIndicator').style.display = 'none';
+}
 
+function generateTranscript() {
+let transcript = `CONVERSATION TRANSCRIPT
+======================
+Study: Customer Service Chatbot Interaction
+Condition: Low Empathy, Pre-Purchase
+Start Time: ${startTime.toLocaleString()}
+Duration: ${Math.floor((new Date() - startTime) / 1000)} seconds
+
+CONVERSATION LOG:
+`;
+
+conversationLog.forEach((entry, index) => {
+const timestamp = entry.timestamp.toLocaleTimeString();
+const sender = entry.sender === 'bot' ? 'AI Assistant' : 'Participant';
+const searchIndicator = entry.isSearching ? ' [SEARCHING]' : '';
+transcript += `\n[${timestamp}] ${sender}${searchIndicator}: ${entry.message}`;
+});
+
+transcript += `\n\n======================
+End of Transcript
+Study Completion: ${new Date().toLocaleString()}`;
+
+return transcript;
+}
+
+function copyTranscript() {
+const transcriptText = document.getElementById('transcriptContent').textContent;
+navigator.clipboard.writeText(transcriptText).then(() => {
+const button = document.getElementById('copyButton');
+const originalText = button.textContent;
+button.textContent = 'Copied!';
+button.style.background = '#28a745';
+setTimeout(() => {
+button.textContent = originalText;
+button.style.background = '#28a745';
+}, 2000);
+}).catch(() => {
+// Fallback for browsers that don't support clipboard API
+const textArea = document.createElement('textarea');
+textArea.value = transcriptText;
+document.body.appendChild(textArea);
+textArea.select();
+document.execCommand('copy');
+document.body.removeChild(textArea);
+alert('Transcript copied to clipboard!');
+});
 }
 
 function sendMessage() {
-
 if (conversationEnded) return;
 
 const input = document.getElementById('chatInput');
-
 const message = input.value.trim();
 
 if (message) {
-
 addMessage(message, false);
-
 input.value = '';
 
 // Show typing indicator and simulate response delay
-
 showTypingIndicator();
-
 document.getElementById('sendButton').disabled = true;
 
 setTimeout(() => {
-
 hideTypingIndicator();
-
 const response = getRandomResponse('context', message);
 
 // Handle proactive responses
-
 if (typeof response === 'object' && response.type === 'proactive') {
-
 sendProactiveSequence(response.initial, response.searching, response.followUp);
-
 } else {
-
 // Handle regular responses
-
 addMessage(response, true);
-
 document.getElementById('sendButton').disabled = false;
-
 input.focus();
-
 }
-
 }, Math.random() * 1500 + 800);
-
 }
-
-}
-
-function generateConversationSummary() {
-
-const endTime = new Date();
-
-const duration = Math.round((endTime - startTime) / 1000);
-
-const userMessages = conversationLog.filter(msg => msg.sender === 'user');
-
-const botMessages = conversationLog.filter(msg => msg.sender === 'bot');
-
-return {
-
-participantId: participantId,
-
-responseId: responseId,
-
-experimentalCondition: `${CONDITION.empathy} empathy, ${CONDITION.stage}`,
-
-startTime: startTime.toISOString(),
-
-endTime: endTime.toISOString(),
-
-duration: duration,
-
-durationMinutes: Math.round(duration / 60 * 100) / 100,
-
-totalMessages: conversationLog.length,
-
-userMessages: userMessages.length,
-
-botMessages: botMessages.length,
-
-avgUserMessageLength: userMessages.length > 0 ? Math.round(userMessages.reduce((sum, msg) => sum + msg.messageLength, 0) / userMessages.length) : 0,
-
-conversationFlow: window.conversationState || {},
-
-fullTranscript: conversationLog.map(msg => ({
-
-time: msg.timestamp,
-
-sender: msg.sender,
-
-message: msg.message,
-
-isSearching: msg.isSearching
-
-}))
-
-};
-
-}
-
-function encodeForURL(obj) {
-
-return encodeURIComponent(JSON.stringify(obj));
-
 }
 
 function endConversation() {
-
 conversationEnded = true;
-
-const conversationSummary = generateConversationSummary();
+const endTime = new Date();
+const duration = Math.round((endTime - startTime) / 1000);
 
 addMessage("Your customer service session has been completed. Thank you for contacting support.", true);
 
 document.getElementById('chatInput').disabled = true;
-
 document.getElementById('sendButton').disabled = true;
-
 document.getElementById('endChatButton').disabled = true;
 
 updateConversationData();
+document.getElementById('conversationDuration').textContent = duration;
 
-// Send data to Google Sheets
-
-sendDataToGoogleSheets(conversationSummary);
-
-}
-
-function showCompletionMessage(message, success = true) {
-
-  document.getElementById('overlay').style.display = 'block';
-
-  const redirectDiv = document.getElementById('redirectMessage');
-
-  
-
-  redirectDiv.innerHTML = `
-
-    <h3>${success ? '✓' : '!'} Chat Completed</h3>
-
-    <p>${message}</p>
-
-    <p><small>You may now close this window and return to the survey.</small></p>
-
-    <button onclick="window.close()" style="background: #2196f3; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 15px;">Close Window</button>
-
-  `;
-
-  
-
-  redirectDiv.style.display = 'block';
-
-}
-
-async function sendDataToGoogleSheets(conversationSummary) {
-
-  console.log("Attempting to send data to Google Sheets");
-
-  console.log("Data being sent:", conversationSummary);
-
-  console.log("Endpoint URL:", DATA_COLLECTION_URL);
-
-  
-
-  try {
-
-    const response = await fetch(DATA_COLLECTION_URL, {
-
-      method: 'POST',
-
-      headers: {
-
-        'Content-Type': 'application/json'
-
-      },
-
-      body: JSON.stringify(conversationSummary)
-
-    });
-
-    
-
-    console.log("Fetch response status:", response.status);
-
-    console.log("Fetch response headers:", response.headers);
-
-    
-
-    const responseText = await response.text();
-
-    console.log("Raw response text:", responseText);
-
-    
-
-    let result;
-
-    try {
-
-      result = JSON.parse(responseText);
-
-      console.log("Parsed response:", result);
-
-    } catch (parseError) {
-
-      console.error("Failed to parse response as JSON:", parseError);
-
-      result = {success: false, error: "Invalid JSON response"};
-
-    }
-
-    
-
-    if (result.success) {
-
-      console.log("Data successfully sent to Google Sheets");
-
-      showCompletionMessage('Your conversation has been successfully recorded. Thank you for participating!', true);
-
-    } else {
-
-      console.error('Failed to save data:', result.error);
-
-      showCompletionMessage('Conversation completed. If you experience any issues, please contact the research team.', false);
-
-    }
-
-  } catch (error) {
-
-    console.error('Error sending data to Google Sheets:', error);
-
-    showCompletionMessage('Conversation completed. Data has been saved locally as backup.', false);
-
-    
-
-    // Fallback: save to localStorage
-
-    localStorage.setItem('chatbotBackup_' + responseId, JSON.stringify(conversationSummary));
-
-  }
-
+// Generate and display transcript
+setTimeout(() => {
+const transcript = generateTranscript();
+document.getElementById('transcriptContent').textContent = transcript;
+document.getElementById('chatContainer').style.display = 'none';
+document.getElementById('transcriptContainer').style.display = 'block';
+}, 1000);
 }
 
 function updateConversationData() {
-
 document.getElementById('conversationLog').textContent = JSON.stringify(conversationLog);
-
 document.getElementById('startTime').textContent = startTime.toISOString();
-
 }
 
 // Event listeners
-
 document.getElementById('sendButton').addEventListener('click', sendMessage);
-
 document.getElementById('endChatButton').addEventListener('click', endConversation);
+document.getElementById('copyButton').addEventListener('click', copyTranscript);
 
 document.getElementById('chatInput').addEventListener('keypress', function(e) {
-
 if (e.key === 'Enter' && !e.shiftKey) {
-
 e.preventDefault();
-
 sendMessage();
-
 }
-
 });
 
 // Initialize conversation data
-
 document.getElementById('experimentalCondition').textContent = `${CONDITION.empathy} empathy, ${CONDITION.stage}`;
-
 updateConversationData();
 
 // Focus on input
-
 document.getElementById('chatInput').focus();
-
-// Auto-end conversation after 15 minutes of inactivity
-
-let inactivityTimer;
-
-function resetInactivityTimer() {
-
-clearTimeout(inactivityTimer);
-
-inactivityTimer = setTimeout(() => {
-
-if (!conversationEnded) {
-
-alert('This conversation will be ended due to inactivity.');
-
-endConversation();
-
-}
-
-}, 15 * 60 * 1000); // 15 minutes
-
-}
-
-document.getElementById('chatInput').addEventListener('input', resetInactivityTimer);
-
-document.getElementById('sendButton').addEventListener('click', resetInactivityTimer);
-
-resetInactivityTimer();
-
 </script>
-
 </body>
-
 </html>
